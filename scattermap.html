@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <style>
+    body{
+      font-family: ProximaNova,ProximaNovaFallback,sans-serif;
+    }
+    p{
+      margin: 0;
+    }
+    #map {
+      width: 30vw;
+      height: 30vw;
+    }
+    #chart-container {
+      position: relative;
+      width: 35vw;
+      height: 35vw;
+      overflow: hidden;
+    }
+    #chart {
+      width: 100%;
+      height: 100%;
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .chart-text{
+      position: relative;
+      text-align: center;
+      width: 20vw;
+      padding: 13%;
+      height: 40%;
+      align-content: center;
+    }
+    .text-container{
+      display: flex;
+      width: 92%;
+      position: relative;
+      height: 49%;
+      padding-left: 1.5vw;
+    }
+    .label {
+      position: absolute;
+      color: gray;
+      font-size: 2vw;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none;
+    }
+    .chart-title{
+      display: flex;
+      flex-direction: row;
+      width: 30vw;
+    }
+    #chart-title{
+      width: 100%;
+      display: inline;
+      flex-direction: column;
+      gap: 5px;
+    }
+    #chart-desc{
+      display: inline;
+      width: 50%;
+    }
+    .chart-and-title{
+      display: flex;
+      flex-direction: column;
+    }
+    .interactive-buildings{
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 50px;
+    }
+    #address-input{
+      width: 250px;
+    }
+    @media screen and (max-width: 768px) {
+      p{
+        font-size: 14px;
+      }
+      .interactive-buildings{
+        gap: 20px;
+      }
+      .interactive-buildings, .chart-title{
+        flex-direction: column;
+      }
+      #map{
+        width: 65vw;
+        height: 65vw;
+      }
+      #chart-container {
+        width: 95vw;
+        height: 95vw;
+      }
+      .chart-and-title{
+        align-items: center;
+        gap: 5px;
+      }
+      .chart-title{
+        gap: 5px;
+      }
+      #chart-title, .chart-title{
+        width: 80vw;
+      }
+      #chart-desc{
+        width: inherit;
+      }
+      .text-container{
+        padding-left: 9vw;
+      }
+      .chart-text{
+        width: 27vw;
+        padding: 14% 8% 0% 8%;
+      }
+      .chtb{
+        bottom: 20px;
+      }
+    }
+  </style>
+  <title>Карта та Графік</title>
+</head>
+<body>
+
+  <div class="interactive-buildings">
+    <div class="chart-and-title" style="gap: 10px">
+      <p id="chart-title">Переміщуйте карту, щоб побачити позицію будинків з неї на графіку справа</p>
+      <div id="map"></div>
+      <p id="chart-title">Або введіть адресу вручну</p>
+      <div>
+        <input type="text" id="address-input" placeholder="Наприклад: Кримська, 62"/>
+        <button id="search-button">Знайти</button>
+        <span id="distance-warning"></span>
+      </div>
+    </div>
+    <div class="chart-and-title">
+      <div class="chart-title">
+        <p id="chart-title"><span style="font-weight: 600; font-size: 20px; text-transform: uppercase;">Одеса</span><br>Співвідношення відстані від будинків до зупинок <span style="font-weight: 600;">громадського транспорту</span> та <span style="font-weight: 600;">маршруток</span></p>
+        <p id="chart-desc">Кожна точка — це один будинок. <span style="color: #e815fe; font-weight: 600;">Кольором</span> підсвічено будинки, які відображаються на карті зліва.</p>
+      </div>
+      <div id="chart-container">
+        <svg id="chart"></svg>
+        <div class="text-container" style="top:4%">
+          <p class="chart-text">До громадського транспорту ближче ніж до маршрутки</p>
+          <p class="chart-text">Далеко від всіх зупинок</p>
+        </div>
+        <div class="text-container">
+          <p class="chart-text chtb">Близько до всіх зупинок</p>
+          <p class="chart-text chtb">До маршрутки ближче ніж до громадського транспорту</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="scattermap.js"></script>
+</body>
+</html>
