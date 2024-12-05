@@ -1,260 +1,120 @@
-fetch('odesa_buildings.geojson') // Завантажуємо файл з даними
-  .then((response) => response.json())
-  .then((data) => {
+let protocol = new pmtiles.Protocol();
+maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    const scatterMap = L.map('map').setView([46.4825, 30.7233], 13); // Виставляємо початкові координати та зум
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(scatterMap);
+const map = new maplibregl.Map({
+    container: 'map',
+    zoom: 12,
+    minZoom: 10.5,
+    maxZoom: 18.5,
+    center: [30.70863, 46.43863],
+    style: "style.json",
+    attributionControl: false,
+    renderWorldCopies: false,
+});
 
-    const pointLayers = {};
+let width = window.innerWidth;
+let height = window.innerHeight;
 
-    // Налаштування графіка
-    const container = document.querySelector('#chart-container');
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
+const sideLength = Math.min(width, height);
 
-    const margin = { top: 20, right: 20, bottom: 40, left: 40 };
-    const chartWidth = containerWidth - margin.left - margin.right;
-    const chartHeight = containerHeight - margin.top - margin.bottom;
+const app = new PIXI.Application({
+    width: sideLength,
+    height: sideLength,
+    backgroundColor: 0xffffff,
+    resolution: window.devicePixelRatio || 1,
+});
 
-    const svg = d3.select('#chart').attr('width', containerWidth).attr('height', containerHeight).append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
+document.getElementById('canvas-container').appendChild(app.view);
 
-    const xScale = d3.scaleLinear().domain([0, 1000]).range([0, chartWidth]);
-    const yScale = d3.scaleLinear().domain([0, 1000]).range([chartHeight, 0]);
+function scale(value, min, max, rangeMin, rangeMax) {
+    const scaleX = (value - min) / (max - min); // Normalize to [0, 1]
+    return rangeMin + scaleX * (rangeMax - rangeMin); // Map to the range
+}
 
-    const xTicks = d3.range(0, 1001, 250);
-    const yTicks = d3.range(0, 1001, 250);
+let cachedVisibleIds = new Set();
 
-    const xGridLines = d3.range(0, 1001, 125);
-    const yGridLines = d3.range(0, 1001, 125);
+function drawScatterplot(visibleFeatures) {
+    const visibleIds = new Set(visibleFeatures.map(f => f.properties.id));
+    cachedVisibleIds = visibleIds;
 
-    svg.append('g')
-    .attr('transform', `translate(0, ${chartHeight})`)
-    .call(d3.axisBottom(xScale)
-        .tickValues(xTicks)
-        .tickSize(0)
-    )
-    .selectAll('.tick text')
-    .style('fill', 'gray')
-    .style('font-size', '12px');
+    app.stage.removeChildren();
 
-    svg.append('g')
-    .call(d3.axisLeft(yScale)
-        .tickValues(yTicks)
-        .tickSize(0)
-    )
-    .selectAll('.tick text')
-    .style('fill', 'gray')
-    .style('font-size', '12px');
+    const maxAllowedValue = 1000;
+    const filteredPoints = points.filter(point => point.x <= maxAllowedValue && point.y <= maxAllowedValue);
 
-    svg.append('g')
-    .selectAll('.x-grid')
-    .data(xGridLines)
-    .enter()
-    .append('line')
-    .attr('class', 'x-grid')
-    .attr('x1', d => xScale(d))
-    .attr('x2', d => xScale(d))
-    .attr('y1', 0)
-    .attr('y2', chartHeight)
-    .style('stroke', 'gray')
-    .style('stroke-opacity', 0.1)
-    .style('stroke-width', 1);
+    const xMin = Math.min(...filteredPoints.map(p => p.x));
+    const xMax = Math.max(...filteredPoints.map(p => p.x));
+    const yMin = Math.min(...filteredPoints.map(p => p.y));
+    const yMax = Math.max(...filteredPoints.map(p => p.y));
 
-    svg.append('g')
-    .selectAll('.y-grid')
-    .data(yGridLines)
-    .enter()
-    .append('line')
-    .attr('class', 'y-grid')
-    .attr('x1', 0)
-    .attr('x2', chartWidth)
-    .attr('y1', d => yScale(d))
-    .attr('y2', d => yScale(d))
-    .style('stroke', 'gray')
-    .style('stroke-opacity', 0.1)
-    .style('stroke-width', 1);
+    const scatterGraphics = new PIXI.Graphics();
+    scatterGraphics.clear();
 
-    svg.append('line')
-    .attr('x1', xScale(500))
-    .attr('x2', xScale(500))
-    .attr('y1', 0)
-    .attr('y2', chartHeight)
-    .style('stroke', 'gray')
-    .style('stroke-opacity', 1)
-    .style('stroke-width', 1);
+    filteredPoints.forEach(point => {
+        const isVisible = visibleIds.has(point.id);
+        const color = isVisible ? 0xe815fe : 0x808080;
+        const opacity = isVisible ? 0.2 : 0.1;
 
-    svg.append('line')
-    .attr('x1', 0)
-    .attr('x2', chartWidth)
-    .attr('y1', yScale(500))
-    .attr('y2', yScale(500))
-    .style('stroke', 'gray')
-    .style('stroke-opacity', 1)
-    .style('stroke-width', 1);
+        // Масштабуємо x та y в межах канвасу
+        const x = scale(point.x, xMin, xMax, 50, sideLength - 50);
+        const y = scale(point.y, yMin, yMax, 50, sideLength - 50);
 
-    svg.append('text')
-    .attr('x', -chartHeight / 2)
-    .attr('y', -margin.left + 15)
-    .attr('text-anchor', 'middle')
-    .attr('transform', 'rotate(-90)')
-    .style('fill', 'gray')
-    .style('font-size', '12px')
-    .text('Відстань до зупинки громадського транспорту, м');
-
-    svg.append('text')
-    .attr('x', chartWidth / 2)
-    .attr('y', chartHeight + margin.bottom - 10)
-    .attr('text-anchor', 'middle')
-    .style('fill', 'gray')
-    .style('font-size', '12px')
-    .text('Відстань до зупинки маршрутки, м');
-
-    svg.selectAll('.domain')
-    .style('stroke', 'none');
-
-    const filteredData = data.features.filter(d => 
-      d.properties.nearest_public_transport_stop_dst <= 1000 && 
-      d.properties.nearest_shuttle_stop_dst <= 1000
-    );
-
-    // Оновлюємо графік на основі того, що ми бачимо на мапі
-    svg
-      .selectAll('.public-transport')
-      .data(filteredData)
-      .enter()
-      .append('circle')
-      .attr('class', 'public-transport')
-      .attr('cx', (d) => xScale(d.properties.nearest_public_transport_stop_dst))
-      .attr('cy', (d) => yScale(d.properties.nearest_shuttle_stop_dst))
-      .attr('r', 4)
-      .style('fill', 'gray')
-      .style('opacity', 0.05)
-      .style('stroke', 'gray')
-      .style('stroke-width', 2)
-      .style('stroke-opacity', 1)
-      .each(function (d) {
-        if (!pointLayers[d.properties['@id']]) pointLayers[d.properties['@id']] = [];
-        pointLayers[d.properties['@id']].push(d3.select(this));
-      });
-
-    function highlightPoint(id) {
-      if (pointLayers[id]) {
-        pointLayers[id].forEach((point) => point.style('fill', '#e815fe').style('stroke', '#e815fe').style('opacity', 0.2));
-      }
-    }
-
-    function resetPoint(id) {
-      if (pointLayers[id]) {
-        pointLayers[id].forEach((point) => point.style('fill', 'gray').style('stroke', 'gray').style('opacity', 0.05));
-      }
-    }
-
-    // Оновлюємо дані, які будівлі ми бачимо на мапи
-    function updateVisiblePointsOnChart() {
-      const bounds = scatterMap.getBounds();
-
-      data.features.forEach((building) => {
-        const latLngs = building.geometry.coordinates[0];
-        const latLng = L.latLng(latLngs[0][1], latLngs[0][0]);
-
-        const isInBounds = bounds.contains(latLng);
-
-        if (isInBounds) {
-          highlightPoint(building.properties['@id']);
-        } else {
-          resetPoint(building.properties['@id']);
-        }
-      });
-    }
-
-    // Оновлюємо дані видинимих будівель коли пересуваємо мапу
-    scatterMap.on('moveend', updateVisiblePointsOnChart);
-    updateVisiblePointsOnChart();
-
-  // Список слів, які необов'язково вводити для пошуку
-  const ignoreWords = ['вулиця', 'проспект', 'шосе', 'площа', 'бульвар', 'вул.', 'провулок'];
-
-  function simplifyAddress(address) {
-    // Переводимо адресу в нижній регістр і обрізаємо зайві пробіли
-    const simplified = address.toLowerCase().trim();
-    
-    // Видаляємо непотрібні слова з адреси
-    let simplifiedStreet = simplified;
-    ignoreWords.forEach(word => {
-      simplifiedStreet = simplifiedStreet.replace(new RegExp(`\\b${word}\\b`, 'g'), '').trim();
+        scatterGraphics.beginFill(color, opacity);
+        scatterGraphics.drawCircle(x, sideLength - y, 7); // Віднімаємо y, щоб 0 був унизу
+        scatterGraphics.endFill();
     });
 
-    return simplifiedStreet;
-  }
+    app.stage.addChild(scatterGraphics);
+}
 
-  // Пошук точки за адресою. Розділяємо назву вулиці на номер будинку комою
-  function findPointByAddress(address) {
-
-    return data.features.find((feature) => {
-      const street = feature.properties['addr:street']?.toLowerCase();
-      const houseNumber = feature.properties['addr:housenumber']?.toLowerCase();
-
-      const simplifiedStreet = simplifyAddress(address.split(',')[0]?.trim());
-      const simplifiedHouseNumber = address.split(',')[1]?.trim();
-
-      return (
-        street?.includes(simplifiedStreet) && houseNumber?.includes(simplifiedHouseNumber)
-      );
+function updateVisiblePoints() {
+    requestAnimationFrame(() => {
+        const visibleFeatures = map.queryRenderedFeatures({ layers: ['buildings-layer'] });
+        drawScatterplot(visibleFeatures);
     });
-  }
+}
 
-  // Прибираємо виділення точки
-  function resetAllPoints() {
-    svg.selectAll('.public-transport')
-      .style('fill', 'gray')
-      .style('stroke', 'gray')
-      .style('opacity', 0.05);
-  }
+map.on('moveend', updateVisiblePoints);
 
-  // Виділяємо потрібну точку
-  function highlightPointOnChart(id) {
-    resetAllPoints();
-    if (pointLayers[id]) {
-      pointLayers[id].forEach((point) =>
-        point.style('fill', '#e815fe').style('stroke', '#e815fe').style('opacity', 1).raise()
-      );
-    }
-  }
+fetch('odesa_buildings.geojson')
+    .then(response => response.json())
+    .then(data => {
+        map.on('load', () => {
+            map.addSource('buildings', {
+                type: 'geojson',
+                data: data,
+            });
 
-  // Якщо відстань більше 1000м, пишемо про це
-  function showDistanceWarning(feature) {
-    const warningElement = document.getElementById('distance-warning');
+            map.addLayer({
+                id: 'buildings-layer',
+                type: 'fill',
+                source: 'buildings',
+                paint: {
+                    'fill-color': 'white',
+                    'fill-opacity': 0.5,
+                },
+            });
 
-    if (
-      feature.properties.nearest_public_transport_stop_dst > 1000 ||
-      feature.properties.nearest_shuttle_stop_dst > 1000
-    ) {
-      warningElement.textContent = 'Дистанція більше 1000 метрів';
-    } else {
-      warningElement.textContent = '';
-    }
-  }
+            points = data.features
+                .map(f => ({
+                    x: f.properties.nearest_shuttle_stop_dst,
+                    y: f.properties.nearest_public_transport_stop_dst,
+                    id: f.properties.id,
+                }))
+                .filter(point => point.x !== null && point.y !== null);
 
-  // Обробка натискання кнопки "Знайти"
-  const searchButton = document.getElementById('search-button');
-  searchButton.addEventListener('click', () => {
-    const address = document.getElementById('address-input').value.trim();
+            updateVisiblePoints();
+        });
+    })
+    .catch(error => {
+        console.error('Error loading GeoJSON:', error);
+    });
 
-    if (address === '') {
-      resetAllPoints();
-      document.getElementById('distance-warning').textContent = '';
-      return;
-    }
+window.addEventListener('resize', () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
 
-    const matchedFeature = findPointByAddress(address);
-
-    if (matchedFeature) {
-      const buildingId = matchedFeature.properties['@id'];
-      highlightPointOnChart(buildingId);
-      showDistanceWarning(matchedFeature);
-    } else {
-      resetAllPoints();
-      document.getElementById('distance-warning').textContent = 'Адресу не знайдено';
-    }
-  });
-})
+    const sideLength = Math.min(width, height);  // Maintain 1:1 aspect ratio
+    app.renderer.resize(sideLength, sideLength);
+    updateVisiblePoints();
+});
