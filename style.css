@@ -8,108 +8,117 @@ body{
     line-height: 1.5;
   }
 
-  .interactive-buildings{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 50px;
+  .interactive-buildings {
+    display: grid;
+    grid: auto-flow / 1fr 1.5fr;
+    padding: 5vh 10vw 5vh 10vw;
     height: 100vh;
+    box-sizing: border-box;
   }
   .content{
     display: flex;
+    width: 100%;
+    height: 100%;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-  .content p{
-    width: 30vw;
+  .map-title{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    bottom: 3%;
+    position: relative;
+    align-items: center;
+  }
+  .chart-title p, .content p{
+    width: inherit;
     font-size: 16px;
   }
   .chart-title{
     display: flex;
     flex-direction: column;
-    width: 35vw;
     gap: 5px;
   }
   .chart-title br{
     margin-bottom: 10px;
   }
-
-
   #map {
-    width: 30vw;
-    height: 30vw;
+    width: 100%;
+    height: 80%;
   }
   #address-input{
     width: 250px;
   }
-
   #canvas-container {
-    width: 35vw;
-    height: 35vw;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   #text-container{
-    width: 35vw;
-    height: 35vw;
+    width: 90%;
+    height: 90%;
+    position: relative;
   }
   canvas {
     width: 100%;
     height: 100%;
   }
-
   .text-block{
     display: flex;
-    flex-direction: row;
     position: absolute;
-    width: inherit;
-    height: 17.5vw;
-    justify-content: center;
-    align-content: center;
-  }
-  .text-block p{
-    font-size: 14px;
+    width: 100%;
+    height: 50%;
   }
   .second{
-    margin-top: 17.5vw;
+    top: 50%;
   }
   .chart-text{
     display: flex;
-    width: 100%;
-    height: 100%;
-    z-index: 99;
     justify-content: center;
     align-items: center;
+    box-sizing: border-box;
     text-align: center;
+  }
+  .chart-text{
+    font-size: 14px;
   }
 
   @media screen and (max-width: 768px) {
     p{
-      font-size: 14px;
+      font-size: 14px !important;
     }
     .interactive-buildings{
-      gap: 20px;
+      all: unset;
+      display: flex;
       flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      gap: 3%;
+    }
+    .map-title{
+      all: unset;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: center;
     }
     .content{
       width: 95%;
       align-items: center;
       gap: 5px;
+      box-sizing: border-box;
+      display: flex;
+      position: relative;
     }
     #map{
-      width: 90vw;
-      height: 50vw;
-    }
-    .chart-title{
-      flex-direction: row;
+      width: 95%;
+      height: inherit;
     }
     .chart-title{
       gap: 5px;
-      width: 80vw;
-    }
-    #canvas-container {
-      width: 95vw;
-      height: 95vw;
+      width: inherit;
     }
   }
