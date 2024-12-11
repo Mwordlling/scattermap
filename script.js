@@ -13,6 +13,7 @@ const map = new maplibregl.Map({
     ],
     style: "style.json",
     renderWorldCopies: false,
+    maxBoundsViscosity: 0.9
 });
 
 const sideLength = Math.min(window.innerWidth, window.innerHeight);
@@ -146,7 +147,7 @@ function drawGraphic() {
 
     const yLegend = new PIXI.Text('Відстань до зупинки громадського транспорту, м', textStyle);
     yLegend.anchor.set(0.5);
-    yLegend.position.set(15, sideLength / 2);
+    yLegend.position.set(10, sideLength / 2);
     yLegend.rotation = -Math.PI / 2;
     legendContainer.addChild(yLegend);
 
