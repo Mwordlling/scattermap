@@ -130,12 +130,16 @@ function drawGraphic() {
     const centerX = padding + (sideLength - 2 * padding) / 2;
     const centerY = padding + (sideLength - 2 * padding) / 2;
 
-    gridGraphics.lineStyle(4, 0x8b8b8b, 0.7);
+    gridGraphics.lineStyle(3, 0x8b8b8b, 0.7);
     gridGraphics.moveTo(centerX, padding).lineTo(centerX, sideLength - padding);
     gridGraphics.moveTo(padding, centerY).lineTo(sideLength - padding, centerY);
 
+    const screenWidth = window.innerWidth;
+    const baseFontSize = 20;
+    const fontSize = Math.max(baseFontSize * (screenWidth / 1920), 12);
+
     const textStyle = new PIXI.TextStyle({
-        fontSize: 20,
+        fontSize: fontSize,
         fill: 0x000000,
         align: 'center',
     });
@@ -152,7 +156,7 @@ function drawGraphic() {
     legendContainer.addChild(yLegend);
 
     const axisTextStyle = new PIXI.TextStyle({
-        fontSize: 16,
+        fontSize: fontSize * 0.8, // Менший розмір для чисел на осях
         fill: 0x000000,
     });
 
@@ -172,6 +176,7 @@ function drawGraphic() {
     }
 }
 
+
 drawGraphic();
 
 function updateScatterplot() {
@@ -184,6 +189,10 @@ function updateScatterplot() {
     const yMin = Math.min(...points.map(p => p.y));
     const yMax = Math.max(...points.map(p => p.y));
 
+    const basePointSize = 5;
+    const screenWidth = window.innerWidth;
+    const pointSize = Math.max(basePointSize * (screenWidth / 1920), 2);
+
     points.forEach(point => {
         const x = scale(point.x, xMin, xMax, padding, sideLength - padding);
         const y = scale(point.y, yMin, yMax, padding, sideLength - padding);
@@ -191,9 +200,10 @@ function updateScatterplot() {
         const color = cachedVisibleIds.has(point.id) ? 0xe815fe : 0x808080;
         const alpha = cachedVisibleIds.has(point.id) ? 0.2 : 0.1;
 
-        scatterGraphics.beginFill(color, alpha).drawCircle(x, sideLength - y, 7).endFill();
+        scatterGraphics.beginFill(color, alpha).drawCircle(x, sideLength - y, pointSize).endFill();
     });
 }
+
 
 function updateVisiblePoints() {
     const visibleFeatures = map.queryRenderedFeatures({ layers: ['buildings-layer'] });

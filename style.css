@@ -84,6 +84,18 @@ body{
   .chart-text{
     font-size: 14px;
   }
+  .a{
+    padding: 16% 5% 11% 9%;
+  }
+  .b{
+    padding: 16% 9% 11% 5%;
+  }
+  .c{
+    padding: 11% 5% 16% 9%;
+  }
+  .d{
+    padding: 11% 9% 16% 5%;
+  }
 
   @media screen and (max-width: 768px) {
     p{
@@ -99,6 +111,7 @@ body{
     }
     .map-title{
       all: unset;
+      width: 90vw;
       display: flex;
       flex-direction: column;
       gap: 5px;
@@ -118,5 +131,23 @@ body{
     .chart-title{
       gap: 5px;
       width: inherit;
+    }
+    #text-container{
+      width: 95%;
+    }
+    .text-block p{
+      font-size: 10px !important;
+    }
+    .a{
+      padding: 25% 5% 11% 20%;
+    }
+    .b{
+      padding: 25% 20% 11% 5%;
+    }
+    .c{
+      padding: 11% 5% 25% 20%;
+    }
+    .d{
+      padding: 11% 20% 25% 5%;
     }
   }
