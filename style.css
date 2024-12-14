@@ -29,7 +29,6 @@ body{
     gap: 15px;
     bottom: 3%;
     position: relative;
-    align-items: center;
   }
   .chart-title p, .content p{
     width: inherit;
@@ -103,7 +102,6 @@ body{
       display: flex;
       flex-direction: column;
       gap: 5px;
-      align-items: center;
     }
     .content{
       width: 95%;
