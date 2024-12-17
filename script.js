@@ -228,3 +228,4 @@ function toggleOpacity(element) {
   }
 
 window.addEventListener('resize', resizePixiCanvas);
+map.resize();
