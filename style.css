@@ -1,153 +1,144 @@
-body{
-    margin: 0;
-    font-family: ProximaNova,ProximaNovaFallback,sans-serif;
+body {
+	margin: 0;
+	font-family: ProximaNova,ProximaNovaFallback,sans-serif;
+}
+canvas {
+    width: 100% !important;
+    height: 100% !important;
   }
+p {
+  margin: 0;
+  line-height: 1.5;
+  font-size: calc(10px + 0.5vw);
+}
 
-  p{
-    margin: 0;
-    line-height: 1.5;
-  }
+.interactive-buildings{
+  display: grid;
+  grid: auto-flow / 1fr 1.5fr;
+  padding: 7vh 10vw 7vh 10vw;
+  min-height: 100vh;
+  gap: 5%;
+  box-sizing: border-box;
+}
+.content{
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+.content div{
+  width: 100%;
+}
+#map{
+  width: 100%;
+  height: 90%;
+}
+.text-section{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.chart-title{
+  font-size: calc(10px + 0.8vw);
+  font-weight: 600;
+}
+.grey-points{
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+.grey-points input{
+  width: 20px;
+  margin: 0;
+}
+#canvas-container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#text-container{
+  width: 80%;
+  height: 80%;
+  position: relative;
+}
+.text-block{
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 50%;
+}
+.second{
+  top: 50%;
+}
+.chart-lable{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  text-align: center;
+  width: inherit;
+  font-size: 14px;
+  opacity: 0;
+}
+.chart-lable.active{
+  opacity: 0;
+}
+.chart-lable:hover{
+  opacity: 1;
+}
+.a{
+  padding: 16% 5% 11% 9%;
+}
+.b{
+  padding: 16% 9% 11% 5%;
+}
+.c{
+  padding: 11% 5% 16% 9%;
+}
+.d{
+  padding: 11% 9% 16% 5%;
+}
 
-  .interactive-buildings {
-    display: grid;
-    grid: auto-flow / 1fr 1.5fr;
-    padding: 5vh 10vw 5vh 10vw;
-    height: 100vh;
-    box-sizing: border-box;
-  }
-  .content{
+@media screen and (max-width: 768px) {
+  .interactive-buildings{
     display: flex;
-    width: 100%;
-    height: 100%;
+    padding: 3vh 5vw 3vh 5vw;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    height: 100vh;
   }
   .map-title{
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    bottom: 3%;
-    position: relative;
+    width: 90vw;
   }
-  .chart-title p, .content p{
-    width: inherit;
-    font-size: 16px;
-  }
-  .chart-title{
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .chart-title br{
-    margin-bottom: 10px;
-  }
-  #map {
-    width: 100%;
-    height: 80%;
-  }
-  #address-input{
-    width: 250px;
-  }
-  #canvas-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .content{
+    gap: 10px;
   }
   #text-container{
-    width: 90%;
-    height: 90%;
-    position: relative;
+    width: 95%;
   }
-  canvas {
-    width: 100%;
-    height: 100%;
+  .chart-title{
+    font-size: calc(10px + 2vw);
   }
-  .text-block{
-    display: flex;
-    position: absolute;
-    width: 100%;
-    height: 50%;
-  }
-  .second{
-    top: 50%;
-  }
-  .chart-text{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    text-align: center;
-  }
-  .chart-text{
-    font-size: 14px;
+  .text-block p{
+    font-size: 10px !important;
   }
   .a{
-    padding: 16% 5% 11% 9%;
+    padding: 25% 5% 11% 20%;
   }
   .b{
-    padding: 16% 9% 11% 5%;
+    padding: 25% 20% 11% 5%;
   }
   .c{
-    padding: 11% 5% 16% 9%;
+    padding: 11% 5% 25% 20%;
   }
   .d{
-    padding: 11% 9% 16% 5%;
+    padding: 11% 20% 25% 5%;
   }
-
-  @media screen and (max-width: 768px) {
-    p{
-      font-size: 14px !important;
-    }
-    .interactive-buildings{
-      all: unset;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      gap: 3%;
-    }
-    .map-title{
-      all: unset;
-      width: 90vw;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .content{
-      width: 95%;
-      align-items: center;
-      gap: 5px;
-      box-sizing: border-box;
-      display: flex;
-      position: relative;
-    }
-    #map{
-      width: 95%;
-      height: inherit;
-    }
-    .chart-title{
-      gap: 5px;
-      width: inherit;
-    }
-    #text-container{
-      width: 95%;
-    }
-    .text-block p{
-      font-size: 10px !important;
-    }
-    .a{
-      padding: 25% 5% 11% 20%;
-    }
-    .b{
-      padding: 25% 20% 11% 5%;
-    }
-    .c{
-      padding: 11% 5% 25% 20%;
-    }
-    .d{
-      padding: 11% 20% 25% 5%;
-    }
+  .chart-lable.active{
+    opacity: 1;
   }
+}

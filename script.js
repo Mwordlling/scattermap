@@ -11,69 +11,33 @@ const map = new maplibregl.Map({
         [30.6030, 46.3408],
         [30.8403, 46.6334]
     ],
-    style: "style.json",
+    style: "data/style.json",
     renderWorldCopies: false,
     maxBoundsViscosity: 0.9
 });
 
-const sideLength = Math.min(window.innerWidth, window.innerHeight);
-const app = new PIXI.Application({
+// PIXI.js canvas initialization
+let sideLength = Math.min(window.innerWidth, window.innerHeight);
+const pixi = new PIXI.Application({
     width: sideLength,
     height: sideLength,
     backgroundColor: 0xffffff,
     resolution: window.devicePixelRatio || 1,
 });
-document.getElementById('canvas-container').appendChild(app.view);
+document.getElementById('canvas-container').appendChild(pixi.view);
 
 const gridGraphics = new PIXI.Graphics();
 const scatterGraphics = new PIXI.Graphics();
 const legendContainer = new PIXI.Container();
-app.stage.addChild(gridGraphics, scatterGraphics, legendContainer);
+pixi.stage.addChild(gridGraphics, scatterGraphics, legendContainer);
 
 const padding = 50;
 const maxCoord = 1000;
 let points = [];
 let cachedVisibleIds = new Set();
 
-//
-const ignoredWords = ['вулиця', 'проспект', 'шосе', 'площа', 'бульвар', 'вул.', 'провулок'];
-function normalizeAddress(address) {
-    return address
-        .split(' ')
-        .map(word => word.toLowerCase())
-        .filter(word => !ignoredWords.includes(word))
-        .join(' ')
-        .trim();
-}
-
-document.getElementById('search-button').addEventListener('click', () => {
-    const input = document.getElementById('address-input').value.trim();
-    const warning = document.getElementById('distance-warning');
-    warning.textContent = '';
-
-    const [inputStreet, inputHouse] = input.split(',').map(s => s.trim());
-    if (!inputStreet || !inputHouse) {
-        warning.textContent = 'Формат адреси має бути: "вулиця, номер будинку".';
-        return;
-    }
-
-    const normalizedInputStreet = normalizeAddress(inputStreet);
-
-    const targetPoint = points.find(p => 
-        normalizeAddress(p.street) === normalizedInputStreet && 
-        p.housenumber === inputHouse.trim()
-    );
-
-    if (targetPoint) {
-        cachedVisibleIds = new Set([targetPoint.id]);
-        updateScatterplot();
-        map.setCenter([targetPoint.x, targetPoint.y]);
-    } else {
-        warning.textContent = 'Адресу не знайдено.';
-    }
-});
-
-fetch('./data/odesa_buildings.geojson')
+// Fetch and load geojson data
+fetch('data/odesa_buildings.geojson')
     .then(response => response.json())
     .then(data => {
         points = data.features
@@ -88,27 +52,52 @@ fetch('./data/odesa_buildings.geojson')
             }));
 
         map.on('load', () => {
+            const layers = map.getStyle().layers;
+            let firstSymbolId;
+            for (let i = 0; i < layers.length; i++) {
+                if (layers[i].type === 'symbol') {
+                    firstSymbolId = layers[i].id;
+                    break;
+                }
+            }
+
             map.addSource('buildings', {
                 type: 'geojson',
                 data,
             });
 
-            map.addLayer({
-                id: 'buildings-layer',
-                type: 'fill',
-                source: 'buildings',
-                paint: {
-                    'fill-color': '#C605FC',
-                    'fill-opacity': 0.8,
+            map.addLayer(
+                {
+                    'id': 'buildings-layer',
+                    'type': 'fill',
+                    'source': 'buildings',
+                    'layout': {},
+                    'paint': {
+                        'fill-color': '#C605FC',
+                        'fill-opacity': 0.8
+                    }
                 },
-            });
+                firstSymbolId
+            );
 
-            updateScatterplot();
+            map.on('moveend', updateVisiblePoints);
+
+            resizePixiCanvas();
         });
     });
 
 function scale(value, min, max, rangeMin, rangeMax) {
     return rangeMin + ((value - min) / (max - min)) * (rangeMax - rangeMin);
+}
+
+function resizePixiCanvas() {
+    sideLength = Math.min(window.innerWidth, window.innerHeight);
+    pixi.renderer.resize(sideLength, sideLength);
+    pixi.view.style.width = `${sideLength}px`;
+    pixi.view.style.height = `${sideLength}px`;
+
+    drawGraphic();
+    updateScatterplot();
 }
 
 function drawGraphic() {
@@ -135,7 +124,7 @@ function drawGraphic() {
     gridGraphics.moveTo(padding, centerY).lineTo(sideLength - padding, centerY);
 
     const screenWidth = window.innerWidth;
-    const baseFontSize = 20;
+    const baseFontSize = 16;
     const fontSize = Math.max(baseFontSize * (screenWidth / 1920), 12);
 
     const textStyle = new PIXI.TextStyle({
@@ -156,7 +145,7 @@ function drawGraphic() {
     legendContainer.addChild(yLegend);
 
     const axisTextStyle = new PIXI.TextStyle({
-        fontSize: fontSize * 0.8, // Менший розмір для чисел на осях
+        fontSize: fontSize * 0.8,
         fill: 0x000000,
     });
 
@@ -176,8 +165,18 @@ function drawGraphic() {
     }
 }
 
+let showGreyPoints = true;
+const toggleGreyPoints = document.getElementById('toggle-grey-points');
 
-drawGraphic();
+toggleGreyPoints.addEventListener('change', (event) => {
+    showGreyPoints = event.target.checked;
+    updateScatterplot();
+});
+
+function getPointSize() {
+    const screenWidth = window.innerWidth;
+    return Math.max(1, Math.min(5, screenWidth / 200)); // мінімальний розмір, максимальний
+}
 
 function updateScatterplot() {
     scatterGraphics.clear();
@@ -189,23 +188,32 @@ function updateScatterplot() {
     const yMin = Math.min(...points.map(p => p.y));
     const yMax = Math.max(...points.map(p => p.y));
 
-    const basePointSize = 5;
-    const screenWidth = window.innerWidth;
-    const pointSize = Math.max(basePointSize * (screenWidth / 1920), 2);
+    const pointSize = getPointSize();
 
     points.forEach(point => {
         const x = scale(point.x, xMin, xMax, padding, sideLength - padding);
         const y = scale(point.y, yMin, yMax, padding, sideLength - padding);
 
-        const color = cachedVisibleIds.has(point.id) ? 0xe815fe : 0x808080;
-        const alpha = cachedVisibleIds.has(point.id) ? 0.2 : 0.1;
+        const isVisible = cachedVisibleIds.has(point.id);
 
-        scatterGraphics.beginFill(color, alpha).drawCircle(x, sideLength - y, pointSize).endFill();
+        if (isVisible) {
+            scatterGraphics.beginFill(0xe815fe, 0.2)
+                .drawCircle(x, sideLength - y, pointSize)
+                .endFill();
+        } else if (showGreyPoints) {
+            scatterGraphics.beginFill(0x808080, 0.1)
+                .drawCircle(x, sideLength - y, pointSize)
+                .endFill();
+        }
     });
 }
 
-
 function updateVisiblePoints() {
+    if (!map.getLayer('buildings-layer')) {
+        console.warn("Layer 'buildings-layer' не існує ще.");
+        return;
+    }
+
     const visibleFeatures = map.queryRenderedFeatures({ layers: ['buildings-layer'] });
     const newVisibleIds = new Set(visibleFeatures.map(f => f.properties.id));
 
@@ -215,5 +223,8 @@ function updateVisiblePoints() {
         updateScatterplot();
     }
 }
+function toggleOpacity(element) {
+    element.classList.toggle('active');
+  }
 
-map.on('moveend', updateVisiblePoints);
+window.addEventListener('resize', resizePixiCanvas);

@@ -12,36 +12,34 @@
 </head>
 <body>
 
-  <div class="interactive-buildings">
-    <div class="content" style="gap: 10px; top: 1%;">
-      <div class="map-title">
-        <p><span style="font-weight: 600;">Переміщуйте карту</span>, щоб побачити позицію будинків з неї на графіку справа, <span style="font-weight: 600;">або введіть адресу вручну</span></p>
-        <div>
-          <input type="text" id="address-input" placeholder="Наприклад: Кримська, 62"/>
-          <button id="search-button">Знайти</button>
-          <span id="distance-warning"></span>
-        </div>
-      </div>
-      <div id="map"></div>
-    </div>
-    <div class="content" style="bottom: 1%;">
-      <div class="chart-title">
-        <p><span style="font-weight: 600; font-size: 20px; text-transform: uppercase;">Одеса</span><br>Співвідношення відстані від будинків до зупинок <span style="font-weight: 600;">громадського транспорту</span> та <span style="font-weight: 600;">маршруток.</span></p>
-        <p>Кожна точка — це один будинок. <span style="color: #e815fe; font-weight: 600;">Кольором</span> підсвічено будинки, які відображаються на карті зліва.</span></p>
-      </div>
-      <div id="text-container">
-        <div class="text-block">
-          <p class="chart-text a">До громадського транспорту ближче</p>
-          <p class="chart-text b">Далеко від всіх зупинок</p>
-        </div>
-        <div class="text-block second">
-          <p class="chart-text c">Близько до всіх зупинок</p>
-          <p class="chart-text d">До маршрутки ближче</p>
-        </div>
-        <div id="canvas-container"></div>
-      </div>
-    </div>
-  </div>
+  	<div class="interactive-buildings">
+		<div class="content">
+			<p><span style="font-weight: 600;">Переміщуйте карту</span>, щоб побачити позицію будинків з неї на графіку справа</p>
+			<div id="map"></div>
+		</div>
+		<div class="content">
+			<div class="text-section">
+				<p class="chart-title">Одеса</p>
+				<p>Співвідношення відстані від будинків до зупинок <span style="font-weight: 600;">громадського транспорту</span> та <span style="font-weight: 600;">маршруток.</span></p>
+				<p>Кожна точка — це один будинок. <span style="color: #e815fe; font-weight: 600;">Кольором</span> підсвічено будинки, які відображаються на карті зліва.</p>
+			</div>
+			<div class="grey-points">
+				<input type="checkbox" id="toggle-grey-points" checked>
+				<p>Показувати сірі точки</p>
+			</div>
+			<div id="text-container">
+				<div class="text-block">
+					<p class="chart-lable a" onclick="toggleOpacity(this)">До громадського транспорту ближче</p>
+					<p class="chart-lable b" onclick="toggleOpacity(this)">Далеко від всіх зупинок</p>
+				</div>
+				<div class="text-block second">
+					<p class="chart-lable c" onclick="toggleOpacity(this)">Близько до всіх зупинок</p>
+					<p class="chart-lable d" onclick="toggleOpacity(this)">До маршрутки ближче</p>
+				</div>
+				<div id="canvas-container"></div>
+			</div>
+		</div>
+	</div>
 
   <script src="script.js"></script>
 </body>
