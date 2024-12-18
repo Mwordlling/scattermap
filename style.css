@@ -5,7 +5,7 @@ body {
 canvas {
     width: 100% !important;
     height: 100% !important;
-  }
+}
 p {
   margin: 0;
   line-height: 1.5;
@@ -34,6 +34,7 @@ p {
 #map{
   width: 100%;
   height: 90%;
+  min-height: 150px;
 }
 .text-section{
   display: flex;
@@ -54,16 +55,14 @@ p {
   margin: 0;
 }
 #canvas-container{
-  width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 #text-container{
-  width: 80%;
-  height: 80%;
   position: relative;
+  max-width: 80%;
 }
 .text-block{
   display: flex;
@@ -81,26 +80,41 @@ p {
   box-sizing: border-box;
   text-align: center;
   width: inherit;
-  font-size: 14px;
-  opacity: 0;
-}
-.chart-lable.active{
-  opacity: 0;
-}
-.chart-lable:hover{
+  font-size: calc(10px + 0.3vw);
   opacity: 1;
 }
+.chart-lable.inactive{
+  opacity: 1;
+}
+.chart-lable:hover{
+  opacity: 0;
+}
 .a{
-  padding: 16% 5% 11% 9%;
+  padding: 16% 9% 11% 13%;
 }
 .b{
-  padding: 16% 9% 11% 5%;
+  padding: 16% 13% 11% 9%;
 }
 .c{
-  padding: 11% 5% 16% 9%;
+  padding: 11% 9% 16% 13%;
 }
 .d{
-  padding: 11% 9% 16% 5%;
+  padding: 11% 13% 16% 5%;
+}
+@media screen and (max-width: 1000px) {
+  .interactive-buildings{
+    padding: 5vh 5vw;
+  }
+  .content{
+    justify-content: center;
+    gap: 10px;
+  }
+  #map{
+    height: 50%;
+  }
+  #text-container{
+    max-width: 100%;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -115,31 +129,34 @@ p {
   .map-title{
     width: 90vw;
   }
+  #map{
+    height: 100%;
+  }
   .content{
     gap: 10px;
-  }
-  #text-container{
-    width: 95%;
   }
   .chart-title{
     font-size: calc(10px + 2vw);
   }
-  .text-block p{
-    font-size: 10px !important;
+  #text-container{
+    max-width: 100%;
   }
   .a{
-    padding: 25% 5% 11% 20%;
+    padding: 21% 5% 11% 16%;
   }
   .b{
-    padding: 25% 20% 11% 5%;
+    padding: 21% 16% 11% 5%;
   }
   .c{
-    padding: 11% 5% 25% 20%;
+    padding: 11% 5% 21% 16%;
   }
   .d{
-    padding: 11% 20% 25% 5%;
+    padding: 11% 16% 21% 5%;
   }
-  .chart-lable.active{
-    opacity: 1;
+  .active{
+    opacity: 0;
+  }
+  .chart-lable{
+    font-size: calc(10px + 0.5vw);
   }
 }

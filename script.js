@@ -16,13 +16,14 @@ const map = new maplibregl.Map({
     maxBoundsViscosity: 0.9
 });
 
-// PIXI.js canvas initialization
+// PIXI.js
 let sideLength = Math.min(window.innerWidth, window.innerHeight);
 const pixi = new PIXI.Application({
     width: sideLength,
     height: sideLength,
     backgroundColor: 0xffffff,
     resolution: window.devicePixelRatio || 1,
+    antialias: true,
 });
 document.getElementById('canvas-container').appendChild(pixi.view);
 
@@ -31,12 +32,13 @@ const scatterGraphics = new PIXI.Graphics();
 const legendContainer = new PIXI.Container();
 pixi.stage.addChild(gridGraphics, scatterGraphics, legendContainer);
 
-const padding = 50;
+const isMobile = window.innerWidth <= 768;
+const padding = isMobile ? 50 : 70; // Відступи
+
 const maxCoord = 1000;
 let points = [];
 let cachedVisibleIds = new Set();
 
-// Fetch and load geojson data
 fetch('data/odesa_buildings.geojson')
     .then(response => response.json())
     .then(data => {
@@ -124,8 +126,17 @@ function drawGraphic() {
     gridGraphics.moveTo(padding, centerY).lineTo(sideLength - padding, centerY);
 
     const screenWidth = window.innerWidth;
-    const baseFontSize = 16;
-    const fontSize = Math.max(baseFontSize * (screenWidth / 1920), 12);
+
+    let fontSize;
+    if (screenWidth >= 1200) {
+        fontSize = 30;
+    } else if (screenWidth >= 768) {
+        fontSize = 26;
+    } else if (screenWidth <= 768) {
+        fontSize = 15;
+    } else {
+        fontSize = 15;
+    }
 
     const textStyle = new PIXI.TextStyle({
         fontSize: fontSize,
@@ -140,12 +151,12 @@ function drawGraphic() {
 
     const yLegend = new PIXI.Text('Відстань до зупинки громадського транспорту, м', textStyle);
     yLegend.anchor.set(0.5);
-    yLegend.position.set(10, sideLength / 2);
+    yLegend.position.set(7, sideLength / 2);
     yLegend.rotation = -Math.PI / 2;
     legendContainer.addChild(yLegend);
 
     const axisTextStyle = new PIXI.TextStyle({
-        fontSize: fontSize * 0.8,
+        fontSize: fontSize * 0.9,
         fill: 0x000000,
     });
 
@@ -165,18 +176,18 @@ function drawGraphic() {
     }
 }
 
-let showGreyPoints = true;
+function getPointSize() {
+    const screenWidth = window.innerWidth;
+    return Math.max(1, Math.min(5, screenWidth / 200)); // мінімальний розмір, максимальний
+}
+
+let showGreyPoints = false;
 const toggleGreyPoints = document.getElementById('toggle-grey-points');
 
 toggleGreyPoints.addEventListener('change', (event) => {
     showGreyPoints = event.target.checked;
     updateScatterplot();
 });
-
-function getPointSize() {
-    const screenWidth = window.innerWidth;
-    return Math.max(1, Math.min(5, screenWidth / 200)); // мінімальний розмір, максимальний
-}
 
 function updateScatterplot() {
     scatterGraphics.clear();
@@ -200,7 +211,7 @@ function updateScatterplot() {
             scatterGraphics.beginFill(0xe815fe, 0.2)
                 .drawCircle(x, sideLength - y, pointSize)
                 .endFill();
-        } else if (showGreyPoints) {
+        } else if (!showGreyPoints) {
             scatterGraphics.beginFill(0x808080, 0.1)
                 .drawCircle(x, sideLength - y, pointSize)
                 .endFill();
